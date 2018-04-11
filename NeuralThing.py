@@ -14,7 +14,6 @@ def randrange(start,stop):
 class FixNeuron():
     def __init__(self, value=1):
         self.value = value
-        self.weights=[]
     def learn(self, delta):
         pass
     def evaluate(self):
@@ -37,17 +36,14 @@ class Neuron:
 
     def shake(self):
         for i in range(len(self.weights)):
-            self.weights[i] += randrange(-.1,.1)
+            self.weights[i] += randrange(-0,.1)
+            self.weights[i] = max(min(self.weights[i],1),0)
 
     def randomWeight(self):
-        return randrange(-1, 1)
+        return randrange(0, 1)
 
-    def append(self,neuron,weight = None):
-        if not self.entries:
-            self.entries.append(FixNeuron())
-            self.weights.append(self.randomWeight())
-
-        self.entries.append(neuron)
+    def append(self, otherNeuron, weight = None):
+        self.entries.append(otherNeuron)
         self.weights.append(weight if weight is not None
                                    else self.randomWeight())
     def learn(self, delta):
@@ -58,17 +54,23 @@ class Neuron:
         #cp.cprint("w0",self.weights)
         weightedvalues = [abs(weight*entry.value) for weight, entry in zip(self.weights,self.entries)]
         sumwvalues= sum(weightedvalues)
-        deltas = [delta* weightedvalue/sumwvalues for weightedvalue in weightedvalues]
+        if sumwvalues != 0:
+            deltas = [delta* weightedvalue/sumwvalues for weightedvalue in weightedvalues]
+        else:
+            deltas =[delta* weightedvalue for weightedvalue in weightedvalues]
         #deltas = [delta* weight*entry.value/self.value for weight, entry in zip(self.weights,self.entries)]
 
         for i in range(len(self.entries)):
             if self.entries[i].value:
                 self.weights[i] += deltas[i]/2./self.entries[i].value#/(self.entries[i].value-deltas[i])
+                self.weights[i] = max(min(self.weights[i], 1), 0)
+
         #cp.cprint("w1",self.weights)
 
         for edelta, entry, weight in zip(deltas, self.entries, self.weights):
             #cp.cprint("prop", entry.value, weight, edelta)
-            entry.learn(edelta/2./weight)
+            if weight != 0:
+                entry.learn(edelta/2./weight)
         cp.pop()
 
 
@@ -76,13 +78,10 @@ class NeuralNetwork:
     def __init__(self, layersSize):
 
         self.neuronLayer=[]
-        for l in layersSize:
-            if not self.neuronLayer :
-                self.neuronLayer.append([FixNeuron() for _ in range(l)])
-            else:
-                self.neuronLayer.append([Neuron(self.neuronLayer[-1]) for _ in range(l)])
-            if l is not layersSize[-1]:
-                self.neuronLayer[-1].append(FixNeuron())
+        self.neuronLayer.append([FixNeuron() for _ in range(layersSize[0]+1)])
+        for l in layersSize[1:-1]:
+            self.neuronLayer.append([Neuron(self.neuronLayer[-1]) for _ in range(l)]+[FixNeuron(1)])
+        self.neuronLayer.append([Neuron(self.neuronLayer[-1]) for _ in range(layersSize[-1])])
 
     def shake(self):
         for layer in self.neuronLayer[1:]:
@@ -158,11 +157,17 @@ class NeuronTest(unittest.TestCase):
 
 class NeuralNetworkTest(unittest.TestCase):
     #@unittest.skip("")
-    def test_create(self):
+    def test_create_two_layers(self):
+        nn=NeuralNetwork([3,2])
+        self.assertEqual(len(nn.neuronLayer),2)
+        self.assertEqual(len(nn.neuronLayer[0]), 3+1)
+        self.assertEqual(len(nn.neuronLayer[1]), 2)
+
+    def test_create_three_layers(self):
         nn=NeuralNetwork([3,4,2])
         self.assertEqual(len(nn.neuronLayer),3)
-        self.assertEqual(len(nn.neuronLayer[0]), 3)
-        self.assertEqual(len(nn.neuronLayer[1]), 4)
+        self.assertEqual(len(nn.neuronLayer[0]), 3+1)
+        self.assertEqual(len(nn.neuronLayer[1]), 4+1)
         self.assertEqual(len(nn.neuronLayer[2]), 2)
 
     #@unittest.skip("")

@@ -6,7 +6,7 @@ class XorFunction:
     def reset(self):
         pass
     def getStatus(self):
-        self.entries=[random.choice([0,1]),random.choice([0,1])]
+        self.entries=[random.choice([-1,1]),random.choice([-1,1])]
         return self.entries
     def result0(self):
         if self.entries[0] == self.entries[1]:

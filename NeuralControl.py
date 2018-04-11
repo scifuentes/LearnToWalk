@@ -7,8 +7,8 @@ class NeuralControl:
         self.actions = actions
         self.sequence = []
 
-        self.layerSize = [len(self.subject.getStatus()) + 1] + inner_layers + [len(actions)]
-        self.network = NeuralNetwork(self.layerSize)
+        layersSize = [len(self.subject.getStatus())] + inner_layers + [len(actions)]
+        self.network = NeuralNetwork(layersSize)
 
     def shake(self):
         self.network.shake()
@@ -20,8 +20,8 @@ class NeuralControl:
     def step(self):
         def selectMaxValue(values):
             return values.index(max(values))
-        def selectAValueAbove0(values):
-            positiveIndex = [i for i, v in enumerate(outValues) if v > 0]
+        def selectAValueAboveThreshold(values,th=1):
+            positiveIndex = [i for i, v in enumerate(outValues) if v > th]
             if len(positiveIndex)>0:
                 return random.choice(positiveIndex)
             else:
@@ -29,16 +29,16 @@ class NeuralControl:
 
         status = self.subject.getStatus()
         outValues = self.network.evaluate(status)
-        nextActionIndex = selectAValueAbove0(outValues)
+        nextActionIndex = selectAValueAboveThreshold(outValues)
         nextAction = self.actions[nextActionIndex]
         try:
             nextAction(self.subject)
             self.sequence.append(nextAction)
-            self.correct(nextActionIndex,.1)
+            self.correct(nextActionIndex,.01)
         except AttributeError:
             sortedValues = sorted(outValues)
             #self.correct(nextActionIndex, sortedValues[-2]-sortedValues[-1]-.1)
-            self.correct(nextActionIndex, -.1)
+            self.correct(nextActionIndex, -.01)
 
     def run(self,times=100):
         self.subject.reset()
@@ -62,26 +62,8 @@ class NeuralTracker(NeuralControl):
         stepWeights=[]
         for layer in self.network.neuronLayer:
             for neuron in layer:
-                stepWeights += neuron.weights
+                if hasattr(neuron,'weights'):
+                    stepWeights += neuron.weights
         self.weights.append(stepWeights)
 
 
-if __name__  == '__main__':
-    from XorFunction import XorFunction
-    import matplotlib.pyplot as plt
-    plt.plot([1, 2, 3, 4])
-
-    actionsNames = ['r0','r1']
-    actions = [XorFunction.result0, XorFunction.result1]
-    actionsDic = {action: name for action, name in zip(actions, actionsNames)}
-
-    t=NeuralTracker(XorFunction(),actions,[])
-    t.run(10000)
-    #print len(t.sequence), t.subject.bodyPos.x, t.subject
-    print len(t.sequence), t.subject
-    print [actionsDic[action] for action in t.sequence]
-    #for weights0,weights1 in zip(t.weights[:-1],t.weights[1:]):
-    #    print max([abs(weight0-weight1) for weight0, weight1 in zip(weights0,weights1)])
-
-    plt.plot(t.weights)
-    plt.show()
