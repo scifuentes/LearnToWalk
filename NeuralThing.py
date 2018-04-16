@@ -37,10 +37,10 @@ class Neuron:
     def shake(self):
         for i in range(len(self.weights)):
             self.weights[i] += randrange(-0,.1)
-            self.weights[i] = max(min(self.weights[i],1),0)
+            #self.weights[i] = max(min(self.weights[i],1),0)
 
     def randomWeight(self):
-        return randrange(0, 1)
+        return randrange(-2, 2)
 
     def append(self, otherNeuron, weight = None):
         self.entries.append(otherNeuron)
@@ -63,7 +63,7 @@ class Neuron:
         for i in range(len(self.entries)):
             if self.entries[i].value:
                 self.weights[i] += deltas[i]/2./self.entries[i].value#/(self.entries[i].value-deltas[i])
-                self.weights[i] = max(min(self.weights[i], 1), 0)
+                #self.weights[i] = max(min(self.weights[i], 1), 0)
 
         #cp.cprint("w1",self.weights)
 

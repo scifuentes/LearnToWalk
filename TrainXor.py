@@ -1,13 +1,14 @@
-from XorFunction import XorFunction
+from BinaryFunctions import *
 from NeuralControl import NeuralTracker
 import matplotlib.pyplot as plt
 
-actionsNames = ['r0','r1']
-actions = [XorFunction.result0, XorFunction.result1]
+actionsNames = ['rFalse','rTrue']
+actions = [BinaryFunction.rFalse, BinaryFunction.rTrue]
 actionsDic = {action: name for action, name in zip(actions, actionsNames)}
 
 t=NeuralTracker(XorFunction(),actions,[])
 t.run(10000)
+
 #print len(t.sequence), t.subject.bodyPos.x, t.subject
 print len(t.sequence), t.subject
 print [actionsDic[action] for action in t.sequence]
