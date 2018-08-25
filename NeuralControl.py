@@ -67,3 +67,21 @@ class NeuralTracker(NeuralControl):
         self.weights.append(stepWeights)
 
 
+if __name__ == '__main__':
+    from WalkingRobot import WalkingRobot
+    actionsNames = [methodName for methodName in WalkingRobot.__dict__ if methodName.startswith('move')]
+    actions = [getattr(WalkingRobot, actionName) for actionName in actionsNames]
+    robot = WalkingRobot()
+    print robot.bodyPos, robot.getStatus()
+
+
+    c=NeuralControl(robot, actions)
+    for r in range(1000):
+        robot.reset()
+        for i in range(1000):
+            c.step()
+
+        print robot.bodyPos, robot.getStatus(), len(c.sequence)
+        c.sequence=[]
+
+

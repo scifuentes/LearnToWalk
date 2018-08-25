@@ -1,6 +1,4 @@
 from copy import deepcopy
-from RandomControl import RandomControl
-from NeuralControl import NeuralControl
 from WalkingRobot import WalkingRobot
 import random
 class Struct:
@@ -11,11 +9,11 @@ actions = [getattr(WalkingRobot, actionName) for actionName in actionsNames]
 actionsDic = {action:name for action, name in zip(actions, actionsNames)}
 
 class Trainner:
-    def __init__(self, ControlClass):
+    def __init__(self, ControlClass, population=100):
         self.cnt = 0
         self.ControlClass = ControlClass
         print self.ControlClass.__name__
-        self.controlers = [self.createNewControler() for _ in range(100)]
+        self.controlers = [self.createNewControler() for _ in range(population)]
 
     def createNewControler(self):
         control = self.ControlClass(WalkingRobot(), actions)
@@ -44,8 +42,10 @@ class Trainner:
             if True:#control.object.bodyPos.x>5:
                 result=Struct()
                 result.controler=controler
-                result.travel=controler.subject.bodyPos.x
-                result.sequence=controler.sequence
+                # result.travel = controler.subject.bodyPos.x
+                #result.travel = (controler.subject.legs[0].x+controler.subject.legs[1].x+controler.subject.legs[2].x+controler.subject.legs[3].x)/4
+                result.travel = controler.subject.bodyPos.x #+ min(controler.subject.legs[0].x,controler.subject.legs[1].x,controler.subject.legs[2].x,controler.subject.legs[3].x)
+                result.sequence = controler.sequence
                 results.append(result)
 
         return results
@@ -76,12 +76,12 @@ class Trainner:
             print [result.travel for result in sorted_results]
             for result in sorted_results[0:min(len(sorted_results), 3)]:
                 actionList = [actionsDic[action] for action in result.sequence]
-                print result.value, result.travel, len(actionList), result.controler.name, actionList
+                #print result.value, result.travel, len(actionList), result.controler.name, actionList
 
         printBestResults()
 
         top_controlers = [result.controler for result in sorted_results[0:10]]
-        random_controllers = [result.controler for result in random.sample(sorted_results,5)
+        random_controllers = [result.controler for result in random.sample(sorted_results,min(len(sorted_results),5))
                                                if result.controler not in top_controlers]
         new_controllers = []#[self.createNewControler() for i in range(10)]
         selected_controlers = top_controlers + random_controllers + new_controllers
@@ -98,4 +98,11 @@ class Trainner:
 
 
 if __name__ == '__main__':
-    Trainner(NeuralControl).train(10, 200)
+    #from NeuralControl import NeuralControl
+    #Trainner(NeuralControl).train(10, 200)
+
+    from RandomControl import RandomControl
+    Trainner(RandomControl,1).train(100, 100)
+
+    from MemoryControl import MemoryControl
+    Trainner(MemoryControl,1).train(100, 100)

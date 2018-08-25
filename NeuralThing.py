@@ -21,6 +21,9 @@ class FixNeuron():
     def shake(self):
         pass
 
+def inRange(value,range):
+    return min(max(value,range[0]),range[1])
+
 class Neuron:
     def __init__(self,inputs = None):
         self.entries=[]  #list of neruons
@@ -29,15 +32,17 @@ class Neuron:
         if inputs is not None:
             for input in inputs:
                 self.append(input)
+        self.weightRange =[-2,2]
+        self.valueRange = [0,1]
 
     def evaluate(self):
         if self.entries:
-            self.value = sum([entry.value*weight for entry, weight in zip(self.entries, self.weights)])
+            self.value = inRange(sum([entry.value*weight for entry, weight in zip(self.entries, self.weights)]),
+                                 self.weightRange)
 
     def shake(self):
         for i in range(len(self.weights)):
-            self.weights[i] += randrange(-0,.1)
-            #self.weights[i] = max(min(self.weights[i],1),0)
+            self.weights[i] += randrange(self.weightRange[0]/4.,self.weightRange[1]/4.)
 
     def randomWeight(self):
         return randrange(-2, 2)
@@ -63,7 +68,7 @@ class Neuron:
         for i in range(len(self.entries)):
             if self.entries[i].value:
                 self.weights[i] += deltas[i]/2./self.entries[i].value#/(self.entries[i].value-deltas[i])
-                #self.weights[i] = max(min(self.weights[i], 1), 0)
+                self.weights[i] = inRange(self.weights[i],self.weightRange)
 
         #cp.cprint("w1",self.weights)
 

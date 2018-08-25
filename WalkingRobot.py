@@ -25,7 +25,7 @@ class Pos:
 class WalkingRobot:
     def __init__(self):
         self.reset()
-        self.xLim = 5
+        self.xLim = 3
         self.yLim = 2
         self.zLim = 1
 
@@ -110,3 +110,17 @@ class WalkingRobot:
     #def moveLegBLBack(self, m=Pos(-1,0,0)):
     #    self._moveLegs(blMove=m)
 
+if __name__ == '__main__':
+    robot = WalkingRobot()
+    print robot.bodyPos,robot.getStatus()
+    for action in [WalkingRobot.moveBodyFront
+                  ,WalkingRobot.moveLegBLUp
+                  ,WalkingRobot.moveLegBLFront
+                  ,WalkingRobot.moveLegBLDown
+                  ,WalkingRobot.moveLegFRUp
+                  ,WalkingRobot.moveLegFRFront
+                  ,WalkingRobot.moveLegFRDown
+                  ,WalkingRobot.moveBodyFront
+                  ]:
+        action(robot)
+        print robot.bodyPos,robot.getStatus()
